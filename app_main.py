@@ -6,7 +6,8 @@ pip install pytubefix
 
 import os
 import time
-import youtube_function as yt
+# import youtube_function as yt
+from youtube_function import *
 
 
 print("="*7+ " Start App " +"="*7)
@@ -18,7 +19,7 @@ def MainApp(folder_path, playlist_link, list_of_extension) :
   
   # get a filtered copy of files in folder
   t = round(time.time())
-  directory_files = yt.getFilesList(folder_path, list_of_extension)
+  directory_files = getFilesList(folder_path, list_of_extension)
   print(f"getFilesList runtime {round(time.time()) - t} second")
   
   # store each data of file as dictionary in this list
@@ -27,7 +28,7 @@ def MainApp(folder_path, playlist_link, list_of_extension) :
   
   i = 0
   while(i < len(directory_files)):
-    file_object = yt.getFileMetadata(folder_path, directory_files[i])
+    file_object = getFileMetadata(folder_path, directory_files[i])
     list_video_metadata.append(file_object)
     i += 1
   
@@ -36,7 +37,7 @@ def MainApp(folder_path, playlist_link, list_of_extension) :
   
   # store a list of all video in playlist as dictionary
   t = round(time.time())
-  ytList_video_metadata = yt.getPlaylistContent(playlist_link)
+  ytList_video_metadata = getPlaylistContent(playlist_link)
   print(f"getPlaylistContent runtime {round(time.time()) - t} second")
   
   # print(ytList_video_metadata)
@@ -54,22 +55,19 @@ def MainApp(folder_path, playlist_link, list_of_extension) :
       if(yt_video['time'] == local_video['time']):
         # print(f"find file name {yt_video['name']}")
         # generate new name that contain a name and extension from local video and index from youtube
-        new_title = yt.generateVideoName(local_video['name'], yt_video['index'], local_video['extension'])
+        video_name = generateVideoName(yt_video['name'], yt_video['index'], local_video['extension'])
         
-        
-        # get all the sentence before first character ']'  
+        # get number of file [01] or [27] in the start of file name
         file_name_prefix = local_video['name'][0: local_video['name'].find(']') + 1]
-        # if file already renamed there we skip to avoid extra renaming 
-        # print(file_name_prefix)
-        if(file_name_prefix == new_title[0:new_title.find(']') + 1]):
-          print(f"the file : {local_video} already exist")
-          break
+        # print(file_name_prefix) # for testing
+        # if file already renamed will skip rest of code to gain proccess time 
+        if(file_name_prefix == video_name['affix']): # get [num] in new title
+          print(f"the file : {local_video} already exist") # information test msg
+        #   break
         
-        # get full file path
-        local_video_path = os.path.join(folder_path, local_video['name'])
-        # replace name of local video by new_title
-        yt.renameFile(local_video_path, new_title)
-        # ignor this local video in future
+        local_video_path = os.path.join(folder_path, local_video['name']) # get full file path
+        renameFile(local_video_path, video_name['name'])
+        # ignor this local video in next cycle
         # list_video_metadata.remove(local_video)
         # exit from loop
         break
@@ -94,6 +92,7 @@ URL_playlist   = input("Enter URL of playlist : ")
 t0 = round(time.time()) 
 MainApp(directory_path, URL_playlist, extension_list)
 print(f"the programme runtime {round(time.time()) - t0} second")
+
 
 # print(directory_path)
 # print(URL_playlist)

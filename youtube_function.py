@@ -35,7 +35,7 @@ def getFilesList(path = "", extension = ["mp4"]):
   
   i = 0
   while(i < len(filesList)):
-    if(os.path.isdir(filesList[i])):
+    if(os.path.isdir(filesList[i]) or filesList[i].rfind('.') == -1):
       i += 1
       continue
     
@@ -56,10 +56,31 @@ def getFilesList(path = "", extension = ["mp4"]):
 
 # (old_name = "test" , order = 5) => "[05] test .mp4"
 def generateVideoName(old_name, order, extension = "mp4"):
+  new_name = ""
+  exclude = "!@#$%^;:&*()_,+=-`~\\|}{]]['\"?/><"
+  for letter in old_name:
+    if(letter in exclude): 
+      letter = '_'
+    new_name += letter
+
+  # Old
+  # if(order < 10):
+  #   return f"[0{order}] {new_name}.{extension}"
+  # else:
+  #   return f"[{order}] {new_name}.{extension}"
+  
+  # New 
+  affix = ''
   if(order < 10):
-    return f"[0{order}] {old_name}.{extension}"
+    affix =  f"[0{order}]"
   else:
-    return f"[{order}] {old_name}.{extension}"
+    affix =  f"[{order}]"
+  
+  
+  return {
+    'name': f'{affix} {new_name}.{extension}',
+    'affix' : affix
+  }
 
 
 # print( generateVideoName("test", 5) )
@@ -82,9 +103,9 @@ def getPlaylistContent(link):
     video = YouTube(url_list[i])
     
     video_obj = {}
-    video_obj['name'] = video.title
-    video_obj['time'] = video.length
-    video_obj['url'] = url_list[i]
+    video_obj['name']  = video.title
+    video_obj['time']  = video.length
+    video_obj['url']   = url_list[i]
     video_obj['index'] = i + 1
     
     
@@ -119,7 +140,8 @@ def getFileMetadata(path, file):
   file_obj = {}
   file_obj['name'] = file
   file_obj['time'] = round(get_duration(p))
-  file_obj['extension'] = file[len(file) - 4: len(file)]
+  # file_obj['extension'] = file[len(file) - 3: len(file)]
+  file_obj['extension'] = file[file.rfind('.'): len(file)] # rfind(input) find last index of input in string
   
   return file_obj
 
